@@ -1,462 +1,848 @@
-# 🧠 Second Brain AI - Personal Knowledge Companion
+# Personal AI Companion - "Second Brain"
 
-A full-stack AI-powered application that acts as your personal "second brain" - ingesting, storing, and intelligently retrieving information from documents, audio, and text using semantic search and LLM-powered responses.
+A multi-modal knowledge management system that allows users to store, manage, and retrieve personal information through conversational AI. Upload text notes, audio recordings, and documents, then chat with your personalized AI assistant to retrieve insights from your stored knowledge base.
 
 ## 🎯 Project Overview
 
-Second Brain AI is a **Retrieval-Augmented Generation (RAG)** system that allows users to:
-- Upload and store personal knowledge (text, documents, audio)
-- Query their knowledge base using natural language
-- Receive intelligent, context-aware answers powered by AI
-- Search across their information using semantic similarity
+The Personal AI Companion leverages Retrieval-Augmented Generation (RAG) to create a searchable memory system powered by semantic search and large language models. It processes multiple input types, generates embeddings for semantic retrieval, and provides intelligent, context-aware responses through a conversational interface.
 
-Built as a take-home assignment demonstrating full-stack development, system architecture, and AI integration skills.
+### Key Features
 
----
-
-## ✨ Features
-
-### Core Functionality
-- 🔄 **Multi-Modal Data Ingestion**: Support for text, PDF documents, and audio files
-- 🤖 **AI-Powered Q&A**: Natural language conversation with your knowledge base
-- 🔍 **Semantic Search**: Vector-based similarity search using embeddings
-- ⏰ **Temporal Queries**: Search by time ("yesterday", "last week", etc.)
-- 📊 **Asynchronous Processing**: Background workers for file processing
-- 💾 **Vector Database**: PostgreSQL with pgvector for efficient similarity search
-
-### Technical Highlights
-- **RAG Architecture**: Retrieval-Augmented Generation for accurate, grounded responses
-- **Real-time Chat**: Interactive chat interface with source attribution
-- **Job Queue System**: Async processing with status tracking
-- **Chunking Strategy**: Intelligent text splitting with overlap for context preservation
-- **Production Ready**: Deployed backend and frontend with CI/CD
-
----
+- **Multi-Modal Ingestion**: Support for text notes, audio files (via transcription), and PDF documents
+- **Semantic Search**: Vector-based retrieval using pgvector for meaning-based search (not just keywords)
+- **Conversational Interface**: Natural language Q&A powered by Google Gemini
+- **Asynchronous Processing**: Background workers handle time-intensive transcription and embedding generation
+- **User Isolation**: Complete data privacy with per-user data segregation
+- **Temporal Awareness**: Timestamps stored with all content for temporal context
 
 ## 🏗️ System Architecture
+
+### High-Level Components
 ```
-┌─────────────┐
-│   Frontend  │ (React + Tailwind)
-│  (Netlify)  │
-└──────┬──────┘
-       │
-       ▼
-┌─────────────────────────────────────┐
-│         Backend API (Render)        │
-│  ┌──────────────────────────────┐  │
-│  │  Express.js REST API         │  │
-│  │  - /api/ingest (upload)      │  │
-│  │  - /api/chat (query)         │  │
-│  │  - /api/jobs (status)        │  │
-│  └──────────────────────────────┘  │
-└──────┬──────────────────────────────┘
-       │
-       ▼
-┌─────────────────────────────────────┐
-│    Background Worker (Render)       │
-│  ┌──────────────────────────────┐  │
-│  │  Job Processor               │  │
-│  │  - Text extraction           │  │
-│  │  - Chunking                  │  │
-│  │  - Embedding generation      │  │
-│  └──────────────────────────────┘  │
-└──────┬──────────────────────────────┘
-       │
-       ▼
-┌─────────────────────────────────────┐
-│   PostgreSQL + pgvector (Supabase)  │
-│  ┌──────────────────────────────┐  │
-│  │  Tables:                     │  │
-│  │  - users                     │  │
-│  │  - sources                   │  │
-│  │  - chunks (with embeddings)  │  │
-│  │  - jobs                      │  │
-│  └──────────────────────────────┘  │
-└─────────────────────────────────────┘
-       ▲
-       │
-┌──────┴──────┐
-│  Gemini AI  │
-│  - Embeddings (text-embedding-004)  │
-│  - LLM Chat (gemini-2.5-flash-lite) │
-└─────────────┘
+┌─────────────┐         ┌──────────────┐         ┌─────────────┐
+│   React     │────────▶│   Express    │────────▶│ PostgreSQL  │
+│  Frontend   │         │  Backend API │         │ + pgvector  │
+└─────────────┘         └──────────────┘         └─────────────┘
+                               │                         ▲
+                               │                         │
+                               ▼                         │
+                        ┌──────────────┐                │
+                        │  Background  │────────────────┘
+                        │    Worker    │
+                        └──────────────┘
+                               │
+                    ┌──────────┴──────────┐
+                    ▼                     ▼
+            ┌──────────────┐      ┌─────────────┐
+            │   Whisper    │      │   Gemini    │
+            │     API      │      │     API     │
+            └──────────────┘      └─────────────┘
 ```
 
----
+### Technology Stack
 
-## 🚀 Tech Stack
+**Frontend**
+- React 18.x
+- Axios for API communication
+- Deployed on Netlify
 
-### Backend
-- **Runtime**: Node.js
-- **Framework**: Express.js
-- **Database**: PostgreSQL (Supabase) with pgvector extension
-- **Vector Search**: pgvector for cosine similarity
-- **AI/ML**: Google Gemini API (embeddings + LLM)
-- **File Processing**: 
-  - `pdf-parse` for PDF extraction
-  - Multer for file uploads
-- **Job Queue**: Custom polling-based worker
+**Backend**
+- Node.js 18.x
+- Express.js
+- Multer for file uploads
+- Deployed on Render
 
-### Frontend
-- **Framework**: React
-- **Styling**: CSS3 with custom design
-- **HTTP Client**: Axios
-- **Deployment**: Netlify
+**Database**
+- PostgreSQL 15.x
+- pgvector extension for vector similarity search
+- Hosted on Supabase
 
-### DevOps
-- **Version Control**: Git + GitHub
-- **Backend Hosting**: Render
-- **Frontend Hosting**: Netlify
-- **Database Hosting**: Supabase
-- **Environment Management**: dotenv
+**External APIs**
+- Google Gemini API (embeddings & LLM responses)
+- OpenAI Whisper API (audio transcription)
 
----
+**Additional Libraries**
+- `pg` - PostgreSQL client
+- `pdf-parse` - PDF text extraction
+- `dotenv` - Environment configuration
 
-## 📦 Installation & Setup
+## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js (v16+)
-- PostgreSQL with pgvector
-- Gemini API key
+
+- Node.js 18.x or higher
+- PostgreSQL 15.x with pgvector extension
+- Google Gemini API key
+- OpenAI API key (for Whisper)
 - Git
 
-### 1. Clone the Repository
+### Installation
+
+#### 1. Clone the Repository
 ```bash
-git clone https://github.com/YOUR_USERNAME/second-brain-ai.git
-cd second-brain-ai
+git clone <repository-url>
+cd second-brain
 ```
 
-### 2. Backend Setup
+#### 2. Database Setup
+
+**Option A: Use Supabase (Recommended)**
+
+1. Create a free account at [supabase.com](https://supabase.com)
+2. Create a new project
+3. Get your connection string from Settings → Database
+4. Enable pgvector extension:
+```sql
+   CREATE EXTENSION IF NOT EXISTS vector;
+```
+
+**Option B: Local PostgreSQL**
+
+1. Install PostgreSQL 15+
+2. Install pgvector extension:
+```bash
+   cd /tmp
+   git clone https://github.com/pgvector/pgvector.git
+   cd pgvector
+   make
+   sudo make install
+```
+3. Create database:
+```bash
+   createdb second_brain
+   psql second_brain -c "CREATE EXTENSION vector;"
+```
+
+#### 3. Initialize Database Schema
+
+Run the following SQL commands in your PostgreSQL database:
+```sql
+CREATE EXTENSION IF NOT EXISTS vector;
+
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  name VARCHAR(255),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE sources (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  source_type VARCHAR(50) NOT NULL,
+  title TEXT,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE chunks (
+  id SERIAL PRIMARY KEY,
+  source_id INTEGER REFERENCES sources(id) ON DELETE CASCADE,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  chunk_index INTEGER NOT NULL,
+  text TEXT NOT NULL,
+  embedding VECTOR(768),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX idx_chunks_user ON chunks(user_id);
+CREATE INDEX idx_chunks_source ON chunks(source_id);
+CREATE INDEX idx_chunks_embedding ON chunks USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
+
+CREATE TABLE jobs (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  source_id INTEGER REFERENCES sources(id) ON DELETE CASCADE,
+  status VARCHAR(50) DEFAULT 'queued',
+  error_message TEXT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX idx_jobs_status ON jobs(status);
+CREATE INDEX idx_jobs_user ON jobs(user_id);
+```
+
+#### 4. Backend Setup
 ```bash
 cd backend
 npm install
 ```
 
-Create `.env` file:
+Create `.env` file in the `backend` directory:
 ```env
+# Database
+DATABASE_URL=postgresql://user:password@host:port/database?sslmode=require
+
+# API Keys
+GEMINI_API_KEY=your_gemini_api_key_here
+OPENAI_API_KEY=your_openai_api_key_here
+
+# Server Configuration
 PORT=5000
 NODE_ENV=development
 
-# Supabase Database
-DATABASE_URL=postgresql://postgres:PASSWORD@HOST:PORT/postgres
-
-# Gemini API
-GEMINI_API_KEY=your_gemini_api_key
-
-# Optional
-REDIS_URL=
+# Frontend URL (for CORS)
+FRONTEND_URL=http://localhost:3000
 ```
 
-Run database migrations (in Supabase SQL Editor):
-```sql
--- See backend/database/schema.sql for full schema
-CREATE EXTENSION IF NOT EXISTS vector;
--- ... (run all table creation scripts)
-```
+**Getting API Keys:**
 
-Start backend:
+- **Gemini API Key**: Get from [Google AI Studio](https://makersuite.google.com/app/apikey)
+- **OpenAI API Key**: Get from [OpenAI Platform](https://platform.openai.com/api-keys)
+
+#### 5. Worker Setup
 ```bash
-npm run dev  # API server on port 5000
+cd worker
+npm install
 ```
 
-Start worker (in separate terminal):
-```bash
-npm run worker  # Background job processor
+Create `.env` file in the `worker` directory (same as backend):
+```env
+DATABASE_URL=postgresql://user:password@host:port/database?sslmode=require
+GEMINI_API_KEY=your_gemini_api_key_here
+OPENAI_API_KEY=your_openai_api_key_here
 ```
 
-### 3. Frontend Setup
+#### 6. Frontend Setup
 ```bash
 cd frontend
 npm install
 ```
 
-Create `.env` file:
+Create `.env` file in the `frontend` directory:
 ```env
 REACT_APP_API_URL=http://localhost:5000
 ```
 
-Start frontend:
+### Running the Application
+
+You need to run three separate processes:
+
+**Terminal 1 - Backend API:**
 ```bash
-npm start  # Runs on port 3000
+cd backend
+npm start
 ```
+Backend will run on `http://localhost:5000`
 
-### 4. Access the Application
+**Terminal 2 - Background Worker:**
+```bash
+cd worker
+npm start
+```
+Worker will continuously poll for jobs
 
-Open [http://localhost:3000](http://localhost:3000)
+**Terminal 3 - Frontend:**
+```bash
+cd frontend
+npm start
+```
+Frontend will run on `http://localhost:3000`
 
----
+Visit `http://localhost:3000` in your browser to use the application.
 
-## 🎮 Usage
+## 📖 How to Use
 
-### Upload Content
-1. Navigate to **Upload** tab
-2. Choose **Text** or **File**
-3. Upload your content
-4. Wait for processing (background worker)
+### 1. Create an Account (if authentication implemented)
+- Register with email and name
+- Login to access your personal knowledge base
 
-### Chat with Your Knowledge
-1. Navigate to **Chat** tab
-2. Ask questions about uploaded content
-3. Receive AI-generated answers with source citations
-4. View similarity scores and timestamps
+### 2. Upload Content
+
+**Text Notes:**
+- Enter a title
+- Type or paste your text
+- Click "Save Note"
+
+**Audio Files:**
+- Enter a title
+- Upload MP3, WAV, or M4A file
+- System will transcribe automatically (takes 5-40 seconds)
+
+**PDF Documents:**
+- Enter a title
+- Upload PDF file
+- System will extract text automatically
+
+### 3. Monitor Processing
+- Each upload creates a background job
+- Status indicators show processing progress
+- Notification appears when ingestion completes
+
+### 4. Chat with Your AI
+- Type questions in the chat interface
+- AI retrieves relevant information from your knowledge base
+- Responses include source citations with timestamps
+- Ask follow-up questions naturally
 
 ### Example Queries
+- "What did I learn about machine learning yesterday?"
+- "Summarize my meeting notes from last week"
+- "What are my action items?"
+- "Tell me about the project timeline I uploaded"
+
+## 🔧 API Documentation
+
+### Authentication Endpoints
+
+#### Register User
+```http
+POST /api/register
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "name": "John Doe",
+  "password": "securepassword"
+}
+
+Response:
+{
+  "success": true,
+  "data": {
+    "userId": 1,
+    "token": "jwt_token_here"
+  }
+}
 ```
-"What are smartgrids?"
-"Summarize the document I uploaded yesterday"
-"Tell me about the Eiffel Tower"
-"What did I save last week?"
+
+#### Login
+```http
+POST /api/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "securepassword"
+}
+
+Response:
+{
+  "success": true,
+  "data": {
+    "userId": 1,
+    "token": "jwt_token_here"
+  }
+}
 ```
 
----
+### Ingestion Endpoints
 
-## 🗄️ Database Schema
+#### Upload Text Note
+```http
+POST /api/ingest/text
+Content-Type: application/json
 
-### Tables
+{
+  "userId": 1,
+  "title": "Meeting Notes",
+  "text": "Discussed project timeline and deliverables..."
+}
 
-**users**
-- `user_id` (UUID, PK)
-- `name`, `email`
-- `created_at`, `updated_at`
+Response:
+{
+  "success": true,
+  "data": {
+    "jobId": 123,
+    "sourceId": 456
+  }
+}
+```
 
-**sources**
-- `source_id` (UUID, PK)
-- `user_id` (FK)
-- `source_type` (text/audio/document)
-- `title`, `raw_location`, `content`
-- `created_at`, `source_timestamp`
+#### Upload Audio File
+```http
+POST /api/ingest/audio
+Content-Type: multipart/form-data
 
-**chunks**
-- `chunk_id` (UUID, PK)
-- `source_id` (FK), `user_id` (FK)
-- `text` (content)
-- `embedding` (vector[768])
-- `chunk_timestamp`, `index`
+userId: 1
+title: "Lecture Recording"
+audioFile: [binary file data]
 
-**jobs**
-- `job_id` (UUID, PK)
-- `user_id` (FK), `source_id` (FK)
-- `status` (queued/processing/done/failed)
-- `error_message`
+Response:
+{
+  "success": true,
+  "data": {
+    "jobId": 124,
+    "sourceId": 457
+  }
+}
+```
 
-### Key Indexes
-- Vector similarity: `HNSW` index on embeddings
-- Temporal queries: Index on timestamps
-- User isolation: Index on `user_id`
+#### Upload Document
+```http
+POST /api/ingest/document
+Content-Type: multipart/form-data
 
----
+userId: 1
+title: "Research Paper"
+documentFile: [binary file data]
 
-## 🔄 Data Flow
+Response:
+{
+  "success": true,
+  "data": {
+    "jobId": 125,
+    "sourceId": 458
+  }
+}
+```
+
+### Job Tracking Endpoints
+
+#### Check Job Status
+```http
+GET /api/jobs/:jobId
+
+Response:
+{
+  "success": true,
+  "data": {
+    "jobId": 123,
+    "status": "done",
+    "createdAt": "2024-11-26T10:30:00Z",
+    "errorMessage": null
+  }
+}
+```
+
+#### List User Jobs
+```http
+GET /api/jobs/user/:userId
+
+Response:
+{
+  "success": true,
+  "data": [
+    {
+      "jobId": 123,
+      "status": "done",
+      "title": "Meeting Notes",
+      "createdAt": "2024-11-26T10:30:00Z"
+    }
+  ]
+}
+```
+
+### Chat Endpoint
+
+#### Send Chat Message
+```http
+POST /api/chat
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "message": "What did I note about the project?"
+}
+
+Response:
+{
+  "success": true,
+  "data": {
+    "response": "Based on your notes, the project timeline...",
+    "sources": [
+      {
+        "chunkId": 789,
+        "text": "Project timeline: Phase 1...",
+        "timestamp": "2024-11-26T10:30:00Z"
+      }
+    ]
+  }
+}
+```
+
+### Source Management Endpoints
+
+#### List Sources
+```http
+GET /api/sources/:userId
+
+Response:
+{
+  "success": true,
+  "data": [
+    {
+      "sourceId": 456,
+      "title": "Meeting Notes",
+      "sourceType": "text",
+      "createdAt": "2024-11-26T10:30:00Z"
+    }
+  ]
+}
+```
+
+#### Delete Source
+```http
+DELETE /api/sources/:sourceId
+
+Response:
+{
+  "success": true,
+  "data": {
+    "message": "Source deleted successfully"
+  }
+}
+```
+
+## 🔍 How It Works
 
 ### Ingestion Pipeline
+
+1. **Upload**: User submits content through the frontend
+2. **Job Creation**: API creates a job record with status='queued'
+3. **Processing**: Background worker picks up the job
+   - Audio: Transcribed via Whisper API
+   - PDF: Text extracted via pdf-parse
+   - Text: Used directly
+4. **Chunking**: Text split into 500-1000 token chunks
+5. **Embedding**: Each chunk embedded using Gemini API (768-dimensional vectors)
+6. **Storage**: Chunks and embeddings stored in PostgreSQL
+7. **Completion**: Job marked as 'done', content searchable
+
+### Retrieval & Chat Flow
+
+1. **Query**: User types a question
+2. **Embedding**: Query embedded using Gemini API
+3. **Search**: Vector similarity search in PostgreSQL using pgvector
+```sql
+   SELECT text, created_at, 
+          1 - (embedding <=> $queryEmbedding) AS similarity
+   FROM chunks
+   WHERE user_id = $userId
+   ORDER BY embedding <=> $queryEmbedding
+   LIMIT 5;
 ```
-1. User uploads text/file
-   ↓
-2. API creates source record + job (status: queued)
-   ↓
-3. Worker picks up job
-   ↓
-4. Extract text based on type:
-   - Text: Direct from database
-   - PDF: Extract using pdf-parse
-   - Audio: Transcribe (placeholder)
-   ↓
-5. Clean and chunk text (~800 tokens, 100 overlap)
-   ↓
-6. Generate embeddings (Gemini text-embedding-004)
-   ↓
-7. Store chunks + vectors in database
-   ↓
-8. Mark job as done
-```
+4. **Context Building**: Top 5 relevant chunks formatted into prompt
+5. **LLM Call**: Prompt sent to Gemini for response generation
+6. **Response**: AI answer with source citations returned to user
 
-### Query Pipeline
-```
-1. User asks question
-   ↓
-2. Parse temporal constraints ("yesterday", etc.)
-   ↓
-3. Generate query embedding
-   ↓
-4. Vector similarity search (top-K chunks)
-   ↓
-5. Build context from retrieved chunks
-   ↓
-6. Send to LLM with prompt template
-   ↓
-7. Return answer + sources
-```
+### Key Technologies Explained
 
----
+**pgvector**: PostgreSQL extension that enables vector similarity search. Stores embeddings as VECTOR(768) type and provides operators like `<=>` for cosine distance.
 
-## 🎨 Design Decisions
+**IVFFlat Index**: Approximate nearest neighbor index that speeds up vector search from O(n) to O(log n).
 
-### Why Vector Database?
-**Semantic search** over keyword matching enables:
-- Understanding user intent
-- Finding conceptually similar content
-- Handling paraphrasing and synonyms
+**Asynchronous Processing**: Separates heavy operations (transcription, embedding) from user-facing API, keeping the interface responsive.
 
-### Why Chunking?
-- **Token limits**: LLM embeddings have max input size
-- **Precision**: Smaller chunks = more accurate retrieval
-- **Context**: Overlap preserves meaning across boundaries
+**Semantic Search**: Unlike keyword search, finds content based on meaning. "car" matches "automobile", "budget planning" matches "financial strategy".
 
-### Why RAG over Fine-tuning?
-- **Dynamic knowledge**: Add new info without retraining
-- **Source attribution**: Show where answers come from
-- **Cost-effective**: No model training required
-- **Accuracy**: Grounded in actual user data
+## 🚢 Deployment
 
-### Why Async Workers?
-- **User experience**: No waiting for slow file processing
-- **Scalability**: Handle multiple uploads simultaneously
-- **Reliability**: Retry failed jobs, track status
+### Backend & Worker Deployment (Render)
 
----
+1. Create account at [render.com](https://render.com)
+2. Create new Web Service for backend
+3. Create new Background Worker for worker
+4. Set environment variables in Render dashboard
+5. Connect to GitHub repository
+6. Auto-deploy on push
 
-## 🚧 Known Limitations
+**Render Configuration:**
 
-- **Audio transcription**: Currently placeholder (not implemented)
-- **Rate limits**: Free tier Gemini API has request limits
-- **Cold starts**: Render free tier spins down after 15 min inactivity
-- **File size**: 50MB upload limit
-- **Concurrent users**: Single test user (no authentication)
-
----
-
-## 🔮 Future Enhancements
-
-- [ ] User authentication and multi-tenancy
-- [ ] Audio transcription (Whisper API)
-- [ ] Web scraping for URL ingestion
-- [ ] Image processing with vision models
-- [ ] Conversation history and context
-- [ ] Advanced filters (date range, source type)
-- [ ] Export knowledge base
-- [ ] Mobile app
-- [ ] Real-time collaboration
-
----
-
-## 📚 API Documentation
-
-### Endpoints
-
-#### `POST /api/ingest/text`
-Upload text content
-```json
-{
-  "text": "Your content here",
-  "title": "Optional title"
-}
+Backend (Web Service):
+```yaml
+Build Command: npm install
+Start Command: npm start
+Environment: Node
 ```
 
-#### `POST /api/ingest/file`
-Upload file (PDF, TXT, audio)
-- Form data with `file` field
-
-#### `POST /api/chat`
-Query knowledge base
-```json
-{
-  "query": "Your question here"
-}
+Worker (Background Worker):
+```yaml
+Build Command: npm install
+Start Command: npm start
+Environment: Node
 ```
 
-#### `GET /api/jobs/:jobId`
-Check job status
+### Frontend Deployment (Netlify)
 
-#### `GET /api/jobs`
-List all jobs for user
+1. Create account at [netlify.com](https://netlify.com)
+2. Connect GitHub repository
+3. Set build settings:
+```
+   Build Command: npm run build
+   Publish Directory: build
+```
+4. Add environment variables:
+```
+   REACT_APP_API_URL=https://your-backend.onrender.com
+```
+5. Deploy
 
----
+### Database Deployment (Supabase)
+
+Already hosted if using Supabase - no additional deployment needed.
+
+### Environment Variables for Production
+
+**Backend/Worker:**
+```env
+DATABASE_URL=postgresql://postgres:[password]@[host]:5432/postgres
+GEMINI_API_KEY=your_production_key
+OPENAI_API_KEY=your_production_key
+PORT=5000
+NODE_ENV=production
+FRONTEND_URL=https://your-frontend.netlify.app
+```
+
+**Frontend:**
+```env
+REACT_APP_API_URL=https://your-backend.onrender.com
+```
 
 ## 🧪 Testing
+
+### Manual Testing Checklist
+
+**Ingestion Tests:**
+- [ ] Upload text note successfully
+- [ ] Upload audio file (MP3) successfully
+- [ ] Upload PDF document successfully
+- [ ] Verify job status updates correctly
+- [ ] Confirm content becomes searchable after processing
+- [ ] Test error handling for invalid files
+
+**Chat Tests:**
+- [ ] Ask question about uploaded content
+- [ ] Verify relevant results returned
+- [ ] Check source citations are accurate
+- [ ] Test with no matching content
+- [ ] Test follow-up questions
+
+**Source Management:**
+- [ ] List all sources
+- [ ] Delete source
+- [ ] Verify chunks deleted with source
+
+### Testing with Sample Data
 ```bash
-# Backend tests (if implemented)
-cd backend
-npm test
+# Test text ingestion
+curl -X POST http://localhost:5000/api/ingest/text \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": 1,
+    "title": "Test Note",
+    "text": "This is a test note about artificial intelligence and machine learning."
+  }'
 
-# Frontend tests (if implemented)
-cd frontend
-npm test
+# Test chat
+curl -X POST http://localhost:5000/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": 1,
+    "message": "What did I write about AI?"
+  }'
 ```
 
----
+## 📊 System Requirements
 
-## 📝 Environment Variables
+### Minimum Requirements
 
-### Backend
+- **CPU**: 2 cores
+- **RAM**: 4GB
+- **Storage**: 10GB (for database and logs)
+- **Network**: Stable internet for API calls
+
+### Recommended Requirements
+
+- **CPU**: 4 cores
+- **RAM**: 8GB
+- **Storage**: 50GB
+- **Network**: High-speed internet for faster processing
+
+### API Rate Limits
+
+- **Gemini API**: 15 requests per minute (free tier)
+- **Whisper API**: 50 requests per minute
+- Consider these limits when processing multiple files
+
+## ⚙️ Configuration Options
+
+### Chunking Configuration
+
+Edit in `worker/src/chunker.js`:
+```javascript
+const CHUNK_SIZE = 1000; // tokens per chunk
+const OVERLAP = 0; // token overlap between chunks
+```
+
+### Retrieval Configuration
+
+Edit in `backend/src/retrieval.js`:
+```javascript
+const TOP_K = 5; // number of chunks to retrieve
+const SIMILARITY_THRESHOLD = 0.3; // minimum similarity score
+```
+
+### Worker Polling Interval
+
+Edit in `worker/src/index.js`:
+```javascript
+const POLL_INTERVAL = 5000; // milliseconds between job checks
+```
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+**Issue: Worker not processing jobs**
+- Check worker is running (`npm start` in worker directory)
+- Verify DATABASE_URL is correct
+- Check job status in database: `SELECT * FROM jobs;`
+- Look for error messages in worker logs
+
+**Issue: "pgvector extension not found"**
+- Install pgvector extension: `CREATE EXTENSION vector;`
+- Verify extension: `SELECT * FROM pg_extension WHERE extname = 'vector';`
+- Restart PostgreSQL after installation
+
+**Issue: Gemini API errors**
+- Verify API key is correct
+- Check rate limits (15 requests/minute on free tier)
+- Ensure model name is correct: `text-embedding-004` and `gemini-1.5-flash`
+
+**Issue: Whisper API timeout**
+- Large audio files may timeout
+- Try smaller file sizes (< 25MB)
+- Ensure audio format is supported (MP3, WAV, M4A)
+
+**Issue: CORS errors in frontend**
+- Verify FRONTEND_URL in backend .env matches frontend URL
+- Check CORS configuration in `backend/src/index.js`
+- Clear browser cache and reload
+
+**Issue: Database connection fails**
+- Check DATABASE_URL format is correct
+- For Supabase, ensure using transaction pooler (port 6543)
+- Verify network allows outbound connections to database
+- Check SSL mode requirement
+
+### Debug Mode
+
+Enable detailed logging:
 ```env
-NODE_ENV=development|production
-PORT=5000
-DATABASE_URL=postgresql://...
-GEMINI_API_KEY=AIza...
+DEBUG=true
+LOG_LEVEL=verbose
 ```
 
-### Frontend
-```env
-REACT_APP_API_URL=http://localhost:5000
+### Database Debugging
+
+Check database contents:
+```sql
+-- View all users
+SELECT * FROM users;
+
+-- View recent jobs
+SELECT * FROM jobs ORDER BY created_at DESC LIMIT 10;
+
+-- View sources for a user
+SELECT * FROM sources WHERE user_id = 1;
+
+-- View chunks for a source
+SELECT id, chunk_index, LEFT(text, 50) as text_preview 
+FROM chunks 
+WHERE source_id = 1 
+ORDER BY chunk_index;
+
+-- Check job failures
+SELECT * FROM jobs WHERE status = 'failed';
 ```
 
----
+## 🔐 Security Considerations
+
+### Implemented Security Features
+
+- User data isolation via user_id filtering
+- HTTPS for production deployments
+- Environment variables for sensitive credentials
+- SQL injection prevention via parameterized queries
+- CORS configuration to restrict origins
+
+### Recommended Enhancements
+
+- Implement JWT authentication
+- Add rate limiting per user
+- Enable API key rotation
+- Add input validation middleware
+- Implement request size limits
+- Add audit logging
+- Enable database encryption at rest
+
+## 📈 Performance Optimization
+
+### Current Optimizations
+
+- Asynchronous ingestion prevents UI blocking
+- IVFFlat index on embeddings for fast vector search
+- Database indexes on user_id and status fields
+- Connection pooling for database
+- Limit retrieval to top-5 chunks
+
+### Future Optimizations
+
+- Cache query embeddings
+- Implement response caching for duplicate queries
+- Add CDN for frontend static assets
+- Use Redis for job queue
+- Implement batch embedding generation
+- Add query result caching layer
 
 ## 🤝 Contributing
 
-This is a take-home assignment project. Contributions are not currently accepted, but feel free to fork and adapt for your own use!
+This is an academic project. If you'd like to extend it:
 
----
+1. Fork the repository
+2. Create a feature branch
+3. Implement your changes
+4. Test thoroughly
+5. Submit a pull request with description
 
 ## 📄 License
 
-MIT License - Feel free to use this project for learning purposes.
-
----
-
-## 👤 Author
-
-**Your Name**
-- GitHub: [@yourusername](https://github.com/yourusername)
-- Email: your.email@example.com
-
----
+This project is created for educational purposes as part of a college placement project.
 
 ## 🙏 Acknowledgments
 
-- **Anthropic** - For the project assignment
-- **Google Gemini** - AI capabilities
-- **Supabase** - Database hosting
-- **Render** - Backend hosting
-- **Netlify** - Frontend hosting
+- **Google Gemini API** for embeddings and LLM capabilities
+- **OpenAI Whisper API** for audio transcription
+- **pgvector** team for PostgreSQL vector extension
+- **Supabase** for managed PostgreSQL hosting
+- **Render** and **Netlify** for deployment platforms
+
+## 📞 Support
+
+For issues or questions:
+1. Check the Troubleshooting section above
+2. Review API documentation
+3. Check database logs and job error messages
+4. Verify all environment variables are set correctly
+
+## 🗺️ Roadmap
+
+Potential future enhancements:
+
+- [ ] Image ingestion with OCR or caption-based search
+- [ ] Web URL ingestion and scraping
+- [ ] Advanced temporal query parsing ("last week", "yesterday")
+- [ ] Job history UI panel
+- [ ] Multi-user chat rooms
+- [ ] Export/import knowledge base
+- [ ] Mobile app
+- [ ] Browser extension for quick capture
+- [ ] Integration with note-taking apps
+- [ ] Voice input for queries
+- [ ] Advanced analytics dashboard
+
+## 📚 Additional Resources
+
+- [pgvector Documentation](https://github.com/pgvector/pgvector)
+- [Google Gemini API Docs](https://ai.google.dev/docs)
+- [OpenAI Whisper API Docs](https://platform.openai.com/docs/guides/speech-to-text)
+- [Supabase Documentation](https://supabase.com/docs)
+- [Express.js Guide](https://expressjs.com/)
+- [React Documentation](https://react.dev/)
 
 ---
 
-## 📸 Screenshots
-
-### Chat Interface
-![Chat Interface](screenshots/chat.png)
-
-### Upload Panel
-![Upload Panel](screenshots/upload.png)
-
-### System Architecture
-![Architecture Diagram](screenshots/architecture.png)
-
----
-
-## 🎯 Assignment Deliverables
-
-- [x] Detailed System Design Document (SDD)
-- [x] Source code repository
-- [x] Working demo (hosted)
-- [x] Video walkthrough
-- [x] Multi-modal ingestion (text + documents)
-- [x] Vector-based retrieval
-- [x] LLM integration
-- [x] Chat interface
-- [x] Temporal querying support
-
----
-
-Built with ❤️ as a demonstration of full-stack AI system design capabilities.
+**Version**: 1.0  
+**Last Updated**: November 26, 2024  
+**Author**: Dhruv Temura
