@@ -29,8 +29,13 @@ class ChatService {
 
       // Build context from retrieved chunks
       const context = relevantChunks
-        .map((chunk, idx) => `[${idx + 1}] ${chunk.text}`)
+        .map((chunk, idx) => 
+          `[${idx + 1}] 
+          Uploaded: ${new Date(chunk.chunk_timestamp).toISOString()}
+          Content: ${chunk.text}`
+        )
         .join('\n\n');
+
 
       // Build prompt for LLM
       const prompt = this.buildPrompt(query, context);
@@ -74,6 +79,7 @@ IMPORTANT RULES:
 3. Do not make up or infer information that isn't in the context
 4. Be concise and direct in your answer
 5. If the context contains conflicting information, mention both perspectives
+6. You may use timestamps provided in the context to answer temporal questions such as "when", "what date", "how long ago", etc.
 
 CONTEXT:
 ${context}
