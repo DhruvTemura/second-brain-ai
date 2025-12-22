@@ -38,39 +38,67 @@ class RetrievalService {
 
   /**
    * Parse temporal expressions in query
-   * e.g., "yesterday", "last week", "last month"
+   * Supports: yesterday, today, last week, last month, this week, this month
    */
   static parseTemporalQuery(query) {
     const now = new Date();
+    const lowerQuery = query.toLowerCase();
     let startDate = null;
     let endDate = null;
 
-    // Simple temporal parsing
-    if (query.toLowerCase().includes('yesterday')) {
+    if (lowerQuery.includes('yesterday')) {
       const yesterday = new Date(now);
       yesterday.setDate(yesterday.getDate() - 1);
       yesterday.setHours(0, 0, 0, 0);
       
-      const tomorrow = new Date(yesterday);
-      tomorrow.setDate(tomorrow.getDate() + 1);
+      const endOfYesterday = new Date(yesterday);
+      endOfYesterday.setHours(23, 59, 59, 999);
       
       startDate = yesterday;
-      endDate = tomorrow;
-    } else if (query.toLowerCase().includes('last week')) {
-      const lastWeek = new Date(now);
-      lastWeek.setDate(lastWeek.getDate() - 7);
-      startDate = lastWeek;
-      endDate = now;
-    } else if (query.toLowerCase().includes('last month')) {
-      const lastMonth = new Date(now);
-      lastMonth.setMonth(lastMonth.getMonth() - 1);
-      startDate = lastMonth;
-      endDate = now;
-    } else if (query.toLowerCase().includes('today')) {
+      endDate = endOfYesterday;
+    } 
+    else if (lowerQuery.includes('today')) {
       const today = new Date(now);
       today.setHours(0, 0, 0, 0);
       startDate = today;
       endDate = now;
+    }
+    else if (lowerQuery.includes('this week')) {
+      const startOfWeek = new Date(now);
+      const day = startOfWeek.getDay();
+      const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1); // Monday as start
+      startOfWeek.setDate(diff);
+      startOfWeek.setHours(0, 0, 0, 0);
+      
+      startDate = startOfWeek;
+      endDate = now;
+    }
+    else if (lowerQuery.includes('last week')) {
+      const lastWeekStart = new Date(now);
+      lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+      lastWeekStart.setHours(0, 0, 0, 0);
+      
+      startDate = lastWeekStart;
+      endDate = now;
+    }
+    else if (lowerQuery.includes('this month')) {
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      startOfMonth.setHours(0, 0, 0, 0);
+      
+      startDate = startOfMonth;
+      endDate = now;
+    }
+    else if (lowerQuery.includes('last month')) {
+      const lastMonthStart = new Date(now);
+      lastMonthStart.setMonth(lastMonthStart.getMonth() - 1);
+      lastMonthStart.setHours(0, 0, 0, 0);
+      
+      startDate = lastMonthStart;
+      endDate = now;
+    }
+
+    if (startDate && endDate) {
+      console.log(`⏰ Temporal range detected: ${startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()}`);
     }
 
     return { startDate, endDate };

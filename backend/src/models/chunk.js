@@ -70,6 +70,35 @@ class Chunk {
   }
 
   /**
+   * Get chunks by time range (metadata-first retrieval)
+   * Used for purely temporal queries like "What did I upload yesterday?"
+   */
+  static async getChunksByTimeRange(userId, startDate, endDate, limit = 10) {
+    const query = `
+      SELECT 
+        c.chunk_id, 
+        c.source_id, 
+        c.user_id, 
+        c.text, 
+        c.chunk_timestamp, 
+        c.index, 
+        c.created_at,
+        s.title as source_title,
+        1.0 as similarity
+      FROM chunks c
+      LEFT JOIN sources s ON c.source_id = s.source_id
+      WHERE c.user_id = $1 
+        AND c.chunk_timestamp >= $2 
+        AND c.chunk_timestamp <= $3
+      ORDER BY c.chunk_timestamp DESC
+      LIMIT $4
+    `;
+    
+    const result = await pool.query(query, [userId, startDate, endDate, limit]);
+    return result.rows;
+  }
+
+  /**
    * Get chunks by source
    */
   static async findBySourceId(sourceId) {
